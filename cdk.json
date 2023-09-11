@@ -1,0 +1,3 @@
+{
+  "app": "deno task --quiet cdk-app"
+}

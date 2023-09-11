@@ -1,0 +1,15 @@
+{
+  "fmt": {
+    "exclude": ["cdk.out/"]
+  },
+  "tasks": {
+    "cdk": "deno run --no-prompt --allow-env --allow-read --allow-write=/tmp,cdk.out,cdk.context.json --allow-sys --allow-run=/bin/sh --allow-net npm:cdk@2.95.1",
+    "cdk-app": "deno run --no-prompt --allow-env --allow-read=/tmp,. --allow-write=/tmp,cdk.out ./bin/app.ts"
+  },
+  "imports": {
+    "aws-cdk-lib": "npm:aws-cdk-lib@2.95.1",
+    "aws-cdk-lib/": "npm:/aws-cdk-lib@2.95.1/",
+    "constructs": "npm:constructs@^10.0.0",
+    "@/": "./src/"
+  }
+}
