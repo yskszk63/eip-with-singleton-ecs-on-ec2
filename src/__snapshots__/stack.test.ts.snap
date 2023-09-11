@@ -1,0 +1,891 @@
+export const snapshot = {};
+
+snapshot[`Snapshot 1`] = `
+{
+  Outputs: {
+    IpAddress: {
+      Value: {
+        "Fn::GetAtt": [
+          "Eip",
+          "PublicIp",
+        ],
+      },
+    },
+  },
+  Parameters: {
+    BootstrapVersion: {
+      Default: "/cdk-bootstrap/hnb659fds/version",
+      Description: "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      Type: "AWS::SSM::Parameter::Value<String>",
+    },
+    SsmParameterValueawsserviceecsoptimizedamiamazonlinux2arm64recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter: {
+      Default: "/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended/image_id",
+      Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+    },
+  },
+  Resources: {
+    AssignEipStateMachine6A1467CE: {
+      DeletionPolicy: "Delete",
+      DependsOn: [
+        "AssignEipStateMachineRoleDefaultPolicy77FF976A",
+        "AssignEipStateMachineRole30700F46",
+      ],
+      Properties: {
+        DefinitionString: {
+          "Fn::Join": [
+            "",
+            [
+              '{"StartAt":"ForEach","States":{"ForEach":{"Type":"Map","End":true,"Iterator":{"StartAt":"ParseBody","States":{"ParseBody":{"Type":"Pass","Parameters":{"body.\$":"States.StringToJson(\$.body)"},"OutputPath":"\$.body","Next":"SkipTestNotification"},"SkipTestNotification":{"Type":"Choice","Choices":[{"Variable":"\$.Event","StringEquals":"autoscaling:TEST_NOTIFICATION","Next":"Skip"}],"Default":"AssociateAddress"},"AssociateAddress":{"Next":"Complete","Type":"Task","ResultPath":null,"Resource":"arn:',
+              {
+                Ref: "AWS::Partition",
+              },
+              ':states:::aws-sdk:ec2:associateAddress","Parameters":{"AllocationId":"',
+              {
+                "Fn::GetAtt": [
+                  "Eip",
+                  "AllocationId",
+                ],
+              },
+              '","AllowReassociation":true,"InstanceId.\$":"\$.EC2InstanceId"}},"Complete":{"End":true,"Type":"Task","Resource":"arn:',
+              {
+                Ref: "AWS::Partition",
+              },
+              ':states:::aws-sdk:autoscaling:completeLifecycleAction","Parameters":{"AutoScalingGroupName.\$":"\$.AutoScalingGroupName","LifecycleActionResult":"CONTINUE","LifecycleHookName.\$":"\$.LifecycleHookName","LifecycleActionToken.\$":"\$.LifecycleActionToken"}},"Skip":{"Type":"Pass","End":true}}}}}}',
+            ],
+          ],
+        },
+        RoleArn: {
+          "Fn::GetAtt": [
+            "AssignEipStateMachineRole30700F46",
+            "Arn",
+          ],
+        },
+      },
+      Type: "AWS::StepFunctions::StateMachine",
+      UpdateReplacePolicy: "Delete",
+    },
+    AssignEipStateMachineRole30700F46: {
+      Properties: {
+        AssumeRolePolicyDocument: {
+          Statement: [
+            {
+              Action: "sts:AssumeRole",
+              Effect: "Allow",
+              Principal: {
+                Service: "states.xx-north-0.amazonaws.com",
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+      },
+      Type: "AWS::IAM::Role",
+    },
+    AssignEipStateMachineRoleDefaultPolicy77FF976A: {
+      Properties: {
+        PolicyDocument: {
+          Statement: [
+            {
+              Action: "ec2:associateAddress",
+              Effect: "Allow",
+              Resource: {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      Ref: "AWS::Partition",
+                    },
+                    ":ec2:",
+                    {
+                      Ref: "AWS::Region",
+                    },
+                    ":",
+                    {
+                      Ref: "AWS::AccountId",
+                    },
+                    ":elastic-ip/",
+                    {
+                      "Fn::GetAtt": [
+                        "Eip",
+                        "AllocationId",
+                      ],
+                    },
+                  ],
+                ],
+              },
+            },
+            {
+              Action: "ec2:AssociateAddress",
+              Condition: {
+                StringEquals: {
+                  "ec2:ResourceTag/aws:autoscaling:groupName": [
+                    {
+                      Ref: "AutoscalingGroupASG25987EFB",
+                    },
+                  ],
+                },
+              },
+              Effect: "Allow",
+              Resource: {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      Ref: "AWS::Partition",
+                    },
+                    ":ec2:",
+                    {
+                      Ref: "AWS::Region",
+                    },
+                    ":",
+                    {
+                      Ref: "AWS::AccountId",
+                    },
+                    ":instance/*",
+                  ],
+                ],
+              },
+            },
+            {
+              Action: "autoscaling:completeLifecycleAction",
+              Effect: "Allow",
+              Resource: {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      Ref: "AWS::Partition",
+                    },
+                    ":autoscaling:xx-north-0:123456789012:autoScalingGroup:*:autoScalingGroupName/",
+                    {
+                      Ref: "AutoscalingGroupASG25987EFB",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        PolicyName: "AssignEipStateMachineRoleDefaultPolicy77FF976A",
+        Roles: [
+          {
+            Ref: "AssignEipStateMachineRole30700F46",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Policy",
+    },
+    AutoscalingGroupASG25987EFB: {
+      Properties: {
+        LaunchConfigurationName: {
+          Ref: "AutoscalingGroupLaunchConfigEBD75746",
+        },
+        MaxSize: "1",
+        MinSize: "0",
+        NewInstancesProtectedFromScaleIn: true,
+        Tags: [
+          {
+            Key: "Name",
+            PropagateAtLaunch: true,
+            Value: "Stack/AutoscalingGroup",
+          },
+        ],
+        VPCZoneIdentifier: [
+          {
+            Ref: "VpcPublicSubnet1Subnet5C2D37C4",
+          },
+        ],
+      },
+      Type: "AWS::AutoScaling::AutoScalingGroup",
+      UpdatePolicy: {
+        AutoScalingScheduledAction: {
+          IgnoreUnmodifiedGroupSizeProperties: true,
+        },
+      },
+    },
+    AutoscalingGroupInstanceProfile010878FF: {
+      Properties: {
+        Roles: [
+          {
+            Ref: "AutoscalingGroupInstanceRoleF9BA888C",
+          },
+        ],
+      },
+      Type: "AWS::IAM::InstanceProfile",
+    },
+    AutoscalingGroupInstanceRoleDefaultPolicy894B4932: {
+      Properties: {
+        PolicyDocument: {
+          Statement: [
+            {
+              Action: [
+                "ecs:DeregisterContainerInstance",
+                "ecs:RegisterContainerInstance",
+                "ecs:Submit*",
+              ],
+              Effect: "Allow",
+              Resource: {
+                "Fn::GetAtt": [
+                  "ClusterEB0386A7",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              Action: [
+                "ecs:Poll",
+                "ecs:StartTelemetrySession",
+              ],
+              Condition: {
+                ArnEquals: {
+                  "ecs:cluster": {
+                    "Fn::GetAtt": [
+                      "ClusterEB0386A7",
+                      "Arn",
+                    ],
+                  },
+                },
+              },
+              Effect: "Allow",
+              Resource: "*",
+            },
+            {
+              Action: [
+                "ecs:DiscoverPollEndpoint",
+                "ecr:GetAuthorizationToken",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              Effect: "Allow",
+              Resource: "*",
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        PolicyName: "AutoscalingGroupInstanceRoleDefaultPolicy894B4932",
+        Roles: [
+          {
+            Ref: "AutoscalingGroupInstanceRoleF9BA888C",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Policy",
+    },
+    AutoscalingGroupInstanceRoleF9BA888C: {
+      Properties: {
+        AssumeRolePolicyDocument: {
+          Statement: [
+            {
+              Action: "sts:AssumeRole",
+              Effect: "Allow",
+              Principal: {
+                Service: "ec2.amazonaws.com",
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        Tags: [
+          {
+            Key: "Name",
+            Value: "Stack/AutoscalingGroup",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Role",
+    },
+    AutoscalingGroupLaunchConfigEBD75746: {
+      DependsOn: [
+        "AutoscalingGroupInstanceRoleDefaultPolicy894B4932",
+        "AutoscalingGroupInstanceRoleF9BA888C",
+      ],
+      Properties: {
+        IamInstanceProfile: {
+          Ref: "AutoscalingGroupInstanceProfile010878FF",
+        },
+        ImageId: {
+          Ref: "SsmParameterValueawsserviceecsoptimizedamiamazonlinux2arm64recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter",
+        },
+        InstanceType: "m7g.medium",
+        SecurityGroups: [
+          {
+            "Fn::GetAtt": [
+              "SecurityGroupDD263621",
+              "GroupId",
+            ],
+          },
+        ],
+        UserData: {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash
+echo ECS_CLUSTER=",
+                {
+                  Ref: "ClusterEB0386A7",
+                },
+                " >> /etc/ecs/ecs.config
+sudo iptables --insert FORWARD 1 --in-interface docker+ --destination 169.254.169.254/32 --jump DROP
+sudo service iptables save
+echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
+              ],
+            ],
+          },
+        },
+      },
+      Type: "AWS::AutoScaling::LaunchConfiguration",
+    },
+    AutoscalingGroupLifecycleHookOnLaunch49A664EF: {
+      DependsOn: [
+        "AutoscalingGroupLifecycleHookOnLaunchRoleDefaultPolicy30895B5B",
+        "AutoscalingGroupLifecycleHookOnLaunchRole226A9848",
+      ],
+      Properties: {
+        AutoScalingGroupName: {
+          Ref: "AutoscalingGroupASG25987EFB",
+        },
+        LifecycleTransition: "autoscaling:EC2_INSTANCE_LAUNCHING",
+        NotificationTargetARN: {
+          "Fn::GetAtt": [
+            "Queue4A7E3555",
+            "Arn",
+          ],
+        },
+        RoleARN: {
+          "Fn::GetAtt": [
+            "AutoscalingGroupLifecycleHookOnLaunchRole226A9848",
+            "Arn",
+          ],
+        },
+      },
+      Type: "AWS::AutoScaling::LifecycleHook",
+    },
+    AutoscalingGroupLifecycleHookOnLaunchRole226A9848: {
+      Properties: {
+        AssumeRolePolicyDocument: {
+          Statement: [
+            {
+              Action: "sts:AssumeRole",
+              Effect: "Allow",
+              Principal: {
+                Service: "autoscaling.amazonaws.com",
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        Tags: [
+          {
+            Key: "Name",
+            Value: "Stack/AutoscalingGroup",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Role",
+    },
+    AutoscalingGroupLifecycleHookOnLaunchRoleDefaultPolicy30895B5B: {
+      Properties: {
+        PolicyDocument: {
+          Statement: [
+            {
+              Action: [
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+              ],
+              Effect: "Allow",
+              Resource: {
+                "Fn::GetAtt": [
+                  "Queue4A7E3555",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        PolicyName: "AutoscalingGroupLifecycleHookOnLaunchRoleDefaultPolicy30895B5B",
+        Roles: [
+          {
+            Ref: "AutoscalingGroupLifecycleHookOnLaunchRole226A9848",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Policy",
+    },
+    CapacityProviderF92AC12E: {
+      Properties: {
+        AutoScalingGroupProvider: {
+          AutoScalingGroupArn: {
+            Ref: "AutoscalingGroupASG25987EFB",
+          },
+          ManagedScaling: {
+            Status: "ENABLED",
+            TargetCapacity: 100,
+          },
+          ManagedTerminationProtection: "ENABLED",
+        },
+      },
+      Type: "AWS::ECS::CapacityProvider",
+    },
+    Cluster3DA9CCBA: {
+      Properties: {
+        CapacityProviders: [
+          {
+            Ref: "CapacityProviderF92AC12E",
+          },
+        ],
+        Cluster: {
+          Ref: "ClusterEB0386A7",
+        },
+        DefaultCapacityProviderStrategy: [],
+      },
+      Type: "AWS::ECS::ClusterCapacityProviderAssociations",
+    },
+    ClusterEB0386A7: {
+      Type: "AWS::ECS::Cluster",
+    },
+    Eip: {
+      Properties: {
+        Tags: [
+          {
+            Key: "Name",
+            Value: "Stack/Eip",
+          },
+        ],
+      },
+      Type: "AWS::EC2::EIP",
+    },
+    Queue4A7E3555: {
+      DeletionPolicy: "Delete",
+      Type: "AWS::SQS::Queue",
+      UpdateReplacePolicy: "Delete",
+    },
+    QueueToStateMachinePipe9955B4CB: {
+      Properties: {
+        RoleArn: {
+          "Fn::GetAtt": [
+            "QueueToStateMachinePipePipeRole42D59EE2",
+            "Arn",
+          ],
+        },
+        Source: {
+          "Fn::GetAtt": [
+            "Queue4A7E3555",
+            "Arn",
+          ],
+        },
+        SourceParameters: {
+          SqsQueueParameters: {},
+        },
+        Target: {
+          Ref: "AssignEipStateMachine6A1467CE",
+        },
+        TargetParameters: {
+          StepFunctionStateMachineParameters: {
+            InvocationType: "FIRE_AND_FORGET",
+          },
+        },
+      },
+      Type: "AWS::Pipes::Pipe",
+    },
+    QueueToStateMachinePipePipeRole42D59EE2: {
+      Properties: {
+        AssumeRolePolicyDocument: {
+          Statement: [
+            {
+              Action: "sts:AssumeRole",
+              Effect: "Allow",
+              Principal: {
+                Service: "pipes.amazonaws.com",
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+      },
+      Type: "AWS::IAM::Role",
+    },
+    QueueToStateMachinePipePipeRoleDefaultPolicy9B4922C3: {
+      Properties: {
+        PolicyDocument: {
+          Statement: [
+            {
+              Action: [
+                "sqs:ReceiveMessage",
+                "sqs:ChangeMessageVisibility",
+                "sqs:GetQueueUrl",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes",
+              ],
+              Effect: "Allow",
+              Resource: {
+                "Fn::GetAtt": [
+                  "Queue4A7E3555",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              Action: "states:StartExecution",
+              Effect: "Allow",
+              Resource: {
+                Ref: "AssignEipStateMachine6A1467CE",
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        PolicyName: "QueueToStateMachinePipePipeRoleDefaultPolicy9B4922C3",
+        Roles: [
+          {
+            Ref: "QueueToStateMachinePipePipeRole42D59EE2",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Policy",
+    },
+    SecurityGroupDD263621: {
+      Properties: {
+        GroupDescription: "Stack/SecurityGroup",
+        SecurityGroupEgress: [
+          {
+            CidrIp: "0.0.0.0/0",
+            Description: "Allow all outbound traffic by default",
+            IpProtocol: "-1",
+          },
+        ],
+        VpcId: {
+          Ref: "Vpc8378EB38",
+        },
+      },
+      Type: "AWS::EC2::SecurityGroup",
+    },
+    ServiceD69D759B: {
+      DependsOn: [
+        "TaskDefinitionTaskRoleDefaultPolicy282E8624",
+        "TaskDefinitionTaskRoleFD40A61D",
+      ],
+      Properties: {
+        CapacityProviderStrategy: [
+          {
+            CapacityProvider: {
+              Ref: "CapacityProviderF92AC12E",
+            },
+            Weight: 1,
+          },
+        ],
+        Cluster: {
+          Ref: "ClusterEB0386A7",
+        },
+        DeploymentConfiguration: {
+          Alarms: {
+            AlarmNames: [],
+            Enable: false,
+            Rollback: false,
+          },
+          MaximumPercent: 100,
+          MinimumHealthyPercent: 0,
+        },
+        EnableECSManagedTags: false,
+        EnableExecuteCommand: true,
+        SchedulingStrategy: "REPLICA",
+        TaskDefinition: {
+          Ref: "TaskDefinitionB36D86D9",
+        },
+      },
+      Type: "AWS::ECS::Service",
+    },
+    TaskDefinitionAppLogGroupCF9E4B35: {
+      DeletionPolicy: "Retain",
+      Type: "AWS::Logs::LogGroup",
+      UpdateReplacePolicy: "Retain",
+    },
+    TaskDefinitionB36D86D9: {
+      Properties: {
+        ContainerDefinitions: [
+          {
+            Command: [
+              "sleep",
+              "inf",
+            ],
+            Essential: true,
+            Image: "debian:bookworm-slim",
+            LinuxParameters: {
+              Capabilities: {},
+              InitProcessEnabled: true,
+            },
+            LogConfiguration: {
+              LogDriver: "awslogs",
+              Options: {
+                "awslogs-group": {
+                  Ref: "TaskDefinitionAppLogGroupCF9E4B35",
+                },
+                "awslogs-region": "xx-north-0",
+                "awslogs-stream-prefix": "app",
+              },
+            },
+            Memory: 512,
+            Name: "App",
+          },
+        ],
+        ExecutionRoleArn: {
+          "Fn::GetAtt": [
+            "TaskDefinitionExecutionRole8D61C2FB",
+            "Arn",
+          ],
+        },
+        Family: "StackTaskDefinitionB1C46A94",
+        NetworkMode: "bridge",
+        RequiresCompatibilities: [
+          "EC2",
+        ],
+        TaskRoleArn: {
+          "Fn::GetAtt": [
+            "TaskDefinitionTaskRoleFD40A61D",
+            "Arn",
+          ],
+        },
+      },
+      Type: "AWS::ECS::TaskDefinition",
+    },
+    TaskDefinitionExecutionRole8D61C2FB: {
+      Properties: {
+        AssumeRolePolicyDocument: {
+          Statement: [
+            {
+              Action: "sts:AssumeRole",
+              Effect: "Allow",
+              Principal: {
+                Service: "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+      },
+      Type: "AWS::IAM::Role",
+    },
+    TaskDefinitionExecutionRoleDefaultPolicy1F3406F5: {
+      Properties: {
+        PolicyDocument: {
+          Statement: [
+            {
+              Action: [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              Effect: "Allow",
+              Resource: {
+                "Fn::GetAtt": [
+                  "TaskDefinitionAppLogGroupCF9E4B35",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        PolicyName: "TaskDefinitionExecutionRoleDefaultPolicy1F3406F5",
+        Roles: [
+          {
+            Ref: "TaskDefinitionExecutionRole8D61C2FB",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Policy",
+    },
+    TaskDefinitionTaskRoleDefaultPolicy282E8624: {
+      Properties: {
+        PolicyDocument: {
+          Statement: [
+            {
+              Action: [
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel",
+              ],
+              Effect: "Allow",
+              Resource: "*",
+            },
+            {
+              Action: "logs:DescribeLogGroups",
+              Effect: "Allow",
+              Resource: "*",
+            },
+            {
+              Action: [
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+              ],
+              Effect: "Allow",
+              Resource: "*",
+            },
+          ],
+          Version: "2012-10-17",
+        },
+        PolicyName: "TaskDefinitionTaskRoleDefaultPolicy282E8624",
+        Roles: [
+          {
+            Ref: "TaskDefinitionTaskRoleFD40A61D",
+          },
+        ],
+      },
+      Type: "AWS::IAM::Policy",
+    },
+    TaskDefinitionTaskRoleFD40A61D: {
+      Properties: {
+        AssumeRolePolicyDocument: {
+          Statement: [
+            {
+              Action: "sts:AssumeRole",
+              Effect: "Allow",
+              Principal: {
+                Service: "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          Version: "2012-10-17",
+        },
+      },
+      Type: "AWS::IAM::Role",
+    },
+    Vpc8378EB38: {
+      Properties: {
+        CidrBlock: "10.0.0.0/16",
+        EnableDnsHostnames: true,
+        EnableDnsSupport: true,
+        InstanceTenancy: "default",
+        Tags: [
+          {
+            Key: "Name",
+            Value: "Stack/Vpc",
+          },
+        ],
+      },
+      Type: "AWS::EC2::VPC",
+    },
+    VpcIGWD7BA715C: {
+      Properties: {
+        Tags: [
+          {
+            Key: "Name",
+            Value: "Stack/Vpc",
+          },
+        ],
+      },
+      Type: "AWS::EC2::InternetGateway",
+    },
+    VpcPublicSubnet1DefaultRoute3DA9E72A: {
+      DependsOn: [
+        "VpcVPCGWBF912B6E",
+      ],
+      Properties: {
+        DestinationCidrBlock: "0.0.0.0/0",
+        GatewayId: {
+          Ref: "VpcIGWD7BA715C",
+        },
+        RouteTableId: {
+          Ref: "VpcPublicSubnet1RouteTable6C95E38E",
+        },
+      },
+      Type: "AWS::EC2::Route",
+    },
+    VpcPublicSubnet1RouteTable6C95E38E: {
+      Properties: {
+        Tags: [
+          {
+            Key: "Name",
+            Value: "Stack/Vpc/PublicSubnet1",
+          },
+        ],
+        VpcId: {
+          Ref: "Vpc8378EB38",
+        },
+      },
+      Type: "AWS::EC2::RouteTable",
+    },
+    VpcPublicSubnet1RouteTableAssociation97140677: {
+      Properties: {
+        RouteTableId: {
+          Ref: "VpcPublicSubnet1RouteTable6C95E38E",
+        },
+        SubnetId: {
+          Ref: "VpcPublicSubnet1Subnet5C2D37C4",
+        },
+      },
+      Type: "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    VpcPublicSubnet1Subnet5C2D37C4: {
+      Properties: {
+        AvailabilityZone: "dummy1a",
+        CidrBlock: "10.0.0.0/16",
+        MapPublicIpOnLaunch: true,
+        Tags: [
+          {
+            Key: "aws-cdk:subnet-name",
+            Value: "Public",
+          },
+          {
+            Key: "aws-cdk:subnet-type",
+            Value: "Public",
+          },
+          {
+            Key: "Name",
+            Value: "Stack/Vpc/PublicSubnet1",
+          },
+        ],
+        VpcId: {
+          Ref: "Vpc8378EB38",
+        },
+      },
+      Type: "AWS::EC2::Subnet",
+    },
+    VpcVPCGWBF912B6E: {
+      Properties: {
+        InternetGatewayId: {
+          Ref: "VpcIGWD7BA715C",
+        },
+        VpcId: {
+          Ref: "Vpc8378EB38",
+        },
+      },
+      Type: "AWS::EC2::VPCGatewayAttachment",
+    },
+  },
+  Rules: {
+    CheckBootstrapVersion: {
+      Assertions: [
+        {
+          Assert: {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    Ref: "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          AssertDescription: "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;
